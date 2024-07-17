@@ -1,7 +1,7 @@
 # 1_species_w/_taxid_get_gbifID.py
-Reads .csv, filters rows where matched_rank != "Species," renames and reorders columns, and saves results to .tsv file.
+Reads .csv, filters rows where matched_rank != "Species," renames and reorders columns based on taxonomy request spreadsheet requirements, and saves results to .tsv file.
 
-Requires [pygbif](https://github.com/gbif/pygbif) to be installed in conda env to grab GBIF ID's from [GBIF Backbone taxonomy](https://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c) using GBIF API, and updates the description column of output .tsv with the GBIF speciesKey.
+Requires [pygbif](https://github.com/gbif/pygbif) to be installed in conda env to grab GBIF ID's from [GBIF Backbone taxonomy](https://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c) using GBIF API, and parses GBIF ID to  description column of output.
 
 
 **usage: python 1_species_wo_taxid_get_gbifID.py [path/to/output.csv] [[trimmed_parent_dir_name]_taxonomy_request.tsv]**
