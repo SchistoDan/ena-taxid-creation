@@ -14,7 +14,7 @@ Requires [pygbif](https://github.com/gbif/pygbif) be installed in conda env to g
 | 177627 | Agapetus iridipennis |  | BGE | 1430666 | 
 | 177860 | Diplectrona meridionalis |  | BGE | 1439205 | 
 
-Species with inconsistencies in their GBIF ID's  (i.e. multiple synonymous ID's, those < 95% confdence, without 'ACCEPTED' status, where Class != Insecta, or where MatchType != EXACT) are output to a separate .tsv called [trimmed_parent_dir_name]_gbif_inconsistent.tsv for review.
+Species with inconsistencies in their GBIF ID's (i.e. multiple synonymous ID's, those < 95% confdence, without 'ACCEPTED' status, where Class != Insecta, or where MatchType != EXACT) are output to a separate .tsv called [trimmed_parent_dir_name]_gbif_inconsistent.tsv for review.
 
 **[trimmed_parent_dir_name]_taxonomy_request.tsv emailed to ENA to request species-level taxID creation**
 
@@ -25,8 +25,9 @@ Species with inconsistencies in their GBIF ID's  (i.e. multiple synonymous ID's,
 | --- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- | --- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	---	| --- |
 | 8753555	| Erotesis melanella McLachlan, 1884 | Erotesis melanella	| SPECIES	| SYNONYM	| 98	| EXACT	| Animalia	| Arthropoda |	Trichoptera |	Leptoceridae |	Adicella |	Adicella melanella |	1 |	54 |	216 | 1003	| 4395	| 1436670	| 1436745	| True |	Insecta	| 5	| 1436745 |
 
-Erotesis melanella McLachlan, 1884 == [8753555](https://www.gbif.org/species/8753555)
-Adicella melanella (McLachlan, 1884) == [1436745](https://www.gbif.org/species/1436745)
+  - Erotesis melanella McLachlan, 1884 == [8753555](https://www.gbif.org/species/8753555)
+  - Adicella melanella (McLachlan, 1884) == [1436745](https://www.gbif.org/species/1436745)
+- Parse new taxIDs created by ENA to file. Currently unsure how new taxIDs will be returned by ENA after creation, and how to get them into ENA sample registration form for sample accession number creation (if even necessary).
 
 
 
