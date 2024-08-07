@@ -19,7 +19,10 @@ Species with inconsistencies in their GBIF ID's (i.e. multiple synonymous ID's, 
 **[trimmed_parent_dir_name]_taxonomy_request.tsv emailed to ENA to request species-level taxID creation**
 
 ## TO DO ##
-- Figure out what to do when GBIF IDs are inconsistent. E.g.:
+- Figure out what to do when GBIF IDs are inconsistent.
+- Parse new taxIDs created by ENA to file. Currently unsure how new taxIDs will be returned by ENA after creation, and how to get them into ENA sample registration form for sample accession number creation (if even necessary).
+
+GBIF ID inconsistency example:
 
 | usageKey |	scientificName |	canonicalName |	rank |	status |	confidence |	matchType |	kingdom |	phylum | order |	family |	genus |	species |	kingdomKey |	phylumKey |	classKey |	orderKey |	familyKey |	genusKey |	speciesKey |	synonym |	class |	index	| acceptedUsageKey |
 | --- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- | --- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	---	| --- |
@@ -27,7 +30,7 @@ Species with inconsistencies in their GBIF ID's (i.e. multiple synonymous ID's, 
 
   - Erotesis melanella McLachlan, 1884 == [8753555](https://www.gbif.org/species/8753555)
   - Adicella melanella (McLachlan, 1884) == [1436745](https://www.gbif.org/species/1436745)
-- Parse new taxIDs created by ENA to file. Currently unsure how new taxIDs will be returned by ENA after creation, and how to get them into ENA sample registration form for sample accession number creation (if even necessary).
+
 
 
 
