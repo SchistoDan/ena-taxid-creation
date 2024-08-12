@@ -127,6 +127,6 @@ def resolve_names_and_update_file(input_filename, output_filename):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python 1_species_wo_taxid_get_gbifID.py path/to/samples2taxid.csv [batch#]_taxonomy_request.tsv")
+        print("Usage: python ena_taxonomy_request.py path/to/samples2taxid.csv [batch#]_taxonomy_request.tsv")
     else:
         tax_request(sys.argv[1], sys.argv[2])
