@@ -1,10 +1,10 @@
-# 1_species_wo_taxid_get_gbifID.py
+# ena_taxonomy_request.py
 Reads [sample2taxid].csv (see [sample-processing repo](https://github.com/SchistoDan/sample-processing)), filters rows where matched_rank != "Species", renames and reorders columns based on taxonomy request spreadsheet requirements, and outputs results to .tsv file.
 
 Requires [pygbif](https://github.com/gbif/pygbif) be installed in conda env to grab GBIF ID's from [GBIF Backbone taxonomy](https://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c) using API.
 
 
-**usage: python 1_species_wo_taxid_get_gbifID.py [path/to/sample2taxid.csv] [trimmed_parent_dir_name]_taxonomy_request.tsv**
+**usage: python ena_taxonomy_request.py [path/to/sample2taxid.csv] [trimmed_parent_dir_name]_taxonomy_request.tsv**
 - path/to/[sample2taxid].csv = path to user-named output.csv file from [sample-processing repo](https://github.com/SchistoDan/sample-processing).
 - [trimmed_parent_dir_name]_taxonomy_request.tsv = .tsv file containing necessary fields for requesting taxonomic id creation by ENA (see below)
 
@@ -20,7 +20,7 @@ Species with inconsistencies in their GBIF ID's (i.e. multiple synonymous ID's, 
 
 ## TO DO ##
 - Figure out what to do when GBIF IDs are inconsistent.
-- Parse new taxIDs created by ENA to file. Currently unsure how new taxIDs will be returned by ENA after creation, and how to get them into ENA sample registration form for sample accession number creation (if even necessary).
+- Parse new taxIDs created by ENA to file. Currently unsure how new taxIDs will be returned by ENA after creation, and how to get them into ENA sample registration form for sample accession number creation.
 
 GBIF ID inconsistency example:
 
