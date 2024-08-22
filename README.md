@@ -4,7 +4,7 @@ Reads [sample2taxid].csv (see [sample-processing repo](https://github.com/Schist
 Requires [pygbif](https://github.com/gbif/pygbif) be installed in conda env to grab GBIF ID's from [GBIF Backbone taxonomy](https://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c) using API.
 
 
-**usage: python ena_taxonomy_request.py [path/to/sample2taxid.csv] [trimmed_parent_dir_name]_taxonomy_request.tsv**
+**usage: python ena_taxonomy_request.py [path/to/sample2taxid.csv] taxonomy_request.tsv species_output.csv**
 - path/to/[sample2taxid].csv = path to user-named output.csv file from [sample-processing repo](https://github.com/SchistoDan/sample-processing).
 - taxonomy_request.tsv = .tsv file containing necessary fields for requesting taxonomic id creation by ENA. Can be named anything (see below).
 - specis_output.csv = .csv file containing rows from sample2taxid.csv where matched_rank == 'species'.
