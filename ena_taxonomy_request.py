@@ -1,34 +1,34 @@
-#Initially reads input CSV, filters rows where matched_rank is not "species," renames and reorders columns, and saves the intermediate result to a temporary TSV file.
+#Reads input csv, filters rows where matched_rank != "species," renames and reorders columns, and outputs to tsv.
 #resolve_names_and_update_file function uses pygbif library to grab gbif id's from GBIF, and updates the description column with the GBIF speciesKey.
-#Updated DataFrame saved to taxaonomy_request.tsv
 #Rows with inconsistencies in GBIF ID are saved to a separate gbif_inconsistent.tsv file.
-
-##pygbif usage - 'from pygbif import species'
-	#species.name_backbone(name='Helianthus annuus', kingdom='plants')
-	#species.name_backbone(name='Helianthus', rank='genus', kingdom='plants')
-	#species.name_backbone(name='Poa', rank='genus', family='Poaceae')
-
+#NEEDS pygbif INSTALLED IN CONDA ENV TO RUN
 
 
 
 import sys
 import os
 import pandas as pd
-from pygbif import species #NEEDS pygbif INSTALLED IN CONDA ENV TO WORK
+from pygbif import species  # Ensure pygbif is installed
 
 
 
 
-def tax_request(input_csv, output_tsv):
+def tax_request(input_csv, output_tsv, species_output_csv):
     df = pd.read_csv(input_csv)
+
+#Filter rows where 'matched_rank' == 'species' & output species-level rows to specified csv
+    species_df = df[df['matched_rank'].str.lower() == 'species']
+    species_df.to_csv(species_output_csv, index=False)
+    print(f"Species-level rows saved to {species_output_csv}")
     
-#Filter rows where 'matched_rank' does not equal 'species'
+#Filter rows where 'matched_rank' != 'species'
     filtered_df = df[df['matched_rank'].str.lower() != 'species']
     
+
 #Select necessary columns and rename them ('taxid' to 'proposed_name' & 'Species' to 'name_type')
     selected_columns = {
         'taxid': 'proposed_name', 
-        'Species': 'name_type' 
+        'Species': 'name_type'
     }
 
     output_df = filtered_df[list(selected_columns.keys())].copy()
@@ -38,18 +38,18 @@ def tax_request(input_csv, output_tsv):
     output_df['proposed_name'] = pd.to_numeric(output_df['proposed_name'], errors='coerce').astype('Int64')
     
 #Add new columns 'host', 'project_id', and 'description'
-    output_df['host'] = ''  # Empty column - not needed
-    output_df['project_id'] = 'BGE'  # Populate 'project_id' with 'BGE' string
-    output_df['description'] = ''  # Will be populated with GBIF ID
+    output_df['host'] = ''  #Empty column - not needed
+    output_df['project_id'] = 'BGE'  #Populate 'project_id' with 'BGE' string
+    output_df['description'] = ''  #Populated with GBIF ID
    
     output_df = output_df[['proposed_name', 'name_type', 'host', 'project_id', 'description']]
     
-#Save filtered DataFrame to temp TSV file
+
     temp_tsv = 'temp_taxonomy_request.tsv'
     output_df.to_csv(temp_tsv, sep='\t', index=False)
     
 #Resolve names using GBIF and update the 'description' column
-    resolve_names_and_update_file(temp_tsv, output_tsv)
+    resolve_names_and_update_file(temp_tsv, output_tsv, input_csv)
 
     os.remove(temp_tsv)
     print(f"Species without species-level taxids saved to {output_tsv}")
@@ -57,21 +57,22 @@ def tax_request(input_csv, output_tsv):
 
 
 
-
-def resolve_names_and_update_file(input_filename, output_filename):
+def resolve_names_and_update_file(input_filename, output_filename, input_csv):
     input_df = pd.read_csv(input_filename, sep='\t')
 
-#Ensure the description column is treated as string type
     input_df['description'] = input_df['description'].astype(str)
 
-#Check if the required column exists
     if 'name_type' not in input_df.columns:
         print("Error: The input file must contain a 'name_type' column.")
         sys.exit(1)
 
+#Load sample2taxid.csv to retrieve 'Process ID' and 'Species'
+    sample_df = pd.read_csv(input_csv)
+
     results = []
 
-#Iterate over each row in the DataFrame
+
+#Iterate over each row in df
     for index, row in input_df.iterrows():
         name_info = {'name': row['name_type']}
 
@@ -86,7 +87,8 @@ def resolve_names_and_update_file(input_filename, output_filename):
 
     result_df = pd.DataFrame(results)
 
-#Filter results based on GBIF - consistent = ID confidence > 95% ,status = ACCEPTED, and class == Insecta, otherwise = inconsistent. 
+
+#Filter results based on GBIF criteria
     consistent_df = result_df[(result_df['confidence'] > 95) & 
                               (result_df['status'] == 'ACCEPTED') & 
                               (result_df['class'] == 'Insecta') &
@@ -95,10 +97,10 @@ def resolve_names_and_update_file(input_filename, output_filename):
     inconsistent_df = result_df[(result_df['confidence'] <= 95) | 
                                 (result_df['status'] != 'ACCEPTED') | 
                                 (result_df['class'] != 'Insecta') |
-                              (result_df['matchType'] != 'EXACT')]
+                                (result_df['matchType'] != 'EXACT')]
 
 
-#Update the 'description' column in the input df 
+#Update 'description' column in df
     for index, row in consistent_df.iterrows():
         current_description = input_df.at[row['index'], 'description']
         if pd.isna(current_description) or current_description.lower() == 'nan':
@@ -108,9 +110,12 @@ def resolve_names_and_update_file(input_filename, output_filename):
         
 #Append speciesKey + link to description column
         species_key = int(row['speciesKey'])  # Ensure speciesKey is an integer
-        input_df.at[row['index'], 'description'] = f"{current_description}https://www.gbif.org/species/{species_key}".strip()
+        input_df.at[row['index'], 'description'] = f"{current_description} https://www.gbif.org/species/{species_key}".strip()
 
-#Write updated df to the output TSV 
+#Update 'project_id' by appending the 'Process ID' where name_type matches 'Species' in sample2taxid.csv
+    input_df['project_id'] = input_df.apply(lambda x: append_process_id(x, sample_df), axis=1)
+
+#Write updated df to the output tsv 
     input_df.to_csv(output_filename, sep='\t', index=False, float_format='%d')
     print(f"Updated file written to {output_filename}")
 
@@ -125,8 +130,23 @@ def resolve_names_and_update_file(input_filename, output_filename):
 
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python ena_taxonomy_request.py path/to/samples2taxid.csv [batch#]_taxonomy_request.tsv")
+
+def append_process_id(row, sample_df):
+
+#Find the matching row in sample_df where Species matches name_type
+    matching_row = sample_df[sample_df['Species'] == row['name_type']]
+    
+#Get 'Process ID' and append to 'BGE'
+    if not matching_row.empty:
+        process_id = matching_row.iloc[0]['Process ID']  
+        return f"BGE: {process_id}"  
     else:
-        tax_request(sys.argv[1], sys.argv[2])
+        return row['project_id']  
+
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 4:
+        print("Usage: python 1_species_wo_taxid_get_gbifID.py path/to/samples2taxid.csv taxonomy_request.tsv species_output.csv")
+    else:
+        tax_request(sys.argv[1], sys.argv[2], sys.argv[3])
