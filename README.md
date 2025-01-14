@@ -1,35 +1,70 @@
-# ena_taxonomy_request.py
-Reads [sample2taxid].csv (see [sample-processing repo](https://github.com/SchistoDan/sample-processing)), filters rows where matched_rank != "Species", renames and reorders columns based on taxonomy request spreadsheet requirements, and outputs results to .tsv file to be emailed to ENA for taxid creation.
+# ENA Taxonomy Request File Generator
+A Python script for processing taxonomic data and generating properly formatted taxonomy request files for the European Nucleotide Archive (ENA). This tool specialises in handling cases where species-level taxonomy IDs are not available, and uses IDs from the [GBIF Backbone taxonomy](https://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c), fetched using the [GBIF Species API](https://techdocs.gbif.org/en/openapi/v1/species) to support requests to ENA.
 
-Requires [pygbif](https://github.com/gbif/pygbif) be installed in conda env to grab GBIF ID's from [GBIF Backbone taxonomy](https://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c) using API.
+## Features
+- Processes taxonomic metadata from CSV files
+- Validates scientific names against GBIF taxonomy
+- Implements hierarchical fallback for taxonomic identification (uses species name if available, otherwise falls back to "Genus sp. {process_id}" if only genus is available, or "Family sp. {process_id}" if only family is available.
+- Performs taxonomic rank validation against GBIF (checks name existence and spelling, taxonomic status (accepted/synonym), validate taxonomy at higher ranks (order and class), and match confidence (>95% for species / >90% for genus) and match type (exact/fuzzy) as per GBIF guidlines.
+- Handles synonyms and taxonomic updates
+- Generates ENA-compliant request files
 
+## Prerequisites
+- Python 3.6+
+- Required Python packages:
+  - pandas
+  - pygbif
+  - logging
 
-**usage: python ena_taxonomy_request.py [path/to/sample2taxid.csv] taxonomy_request.tsv species_output.csv**
-- path/to/[sample2taxid].csv = path to user-named output.csv file from [sample-processing repo](https://github.com/SchistoDan/sample-processing).
-- taxonomy_request.tsv = .tsv file containing necessary fields for requesting taxonomic id creation by ENA. Can be named anything (see below).
-- specis_output.csv = .csv file containing rows from sample2taxid.csv where matched_rank == 'species'.
+## Installation
+1. Clone this repository:
+```bash
+git clone [repository-url]
+```
+2. Install required packages, e.g. [pygbif](https://github.com/gbif/pygbif)
+```bash
+pip install pandas pygbif
+```
 
+## Usage
+```
+python ena_taxonomy_request.py path/to/sample_metadata.csv path/to/samples.csv output_prefix
+```
+
+## Input files
+**metadata.csv**: Contains taxonomic information with columns:
+Process ID
+phylum
+class
+order
+family
+genus
+species
+matched_rank
+taxid
+**samples.csv**: Contains Process IDs to be processed by script.
+
+## Output Files
+The script generates several output files with the specified prefix:
+- {prefix}_taxonomy_request.tsv: Main output file formatted for ENA submission
+- {prefix}_tax_validation_fails.csv: Records that failed taxonomic validation
+- {prefix}_gbif_inconsistent.tsv: Records with GBIF inconsistencies (synonyms, etc.)
+- {prefix}.log: Detailed processing log
+
+### Example {prefix}_taxonomy_request.tsv
 | proposed_name  | name_type | host | project_id | description |
 | --------- | --------- |--------- | --------- | --------- |
-| 177658  | Apatania stylata |  | BGE: [Process ID] | https://www.gbif.org/species/[GBIF ID] | 
-| 177627 | Agapetus iridipennis |  | BGE: [Process ID] | https://www.gbif.org/species/[GBIF ID] | 
-| 177860 | Diplectrona meridionalis |  | BGE: [Process ID] | https://www.gbif.org/species/[GBIF ID] | 
+| Apatania stylata  | published_name |  | BGE | https://www.gbif.org/species/[GBIF ID] | 
+| Agapetus iridipennis | published_name |  | BGE | https://www.gbif.org/species/[GBIF ID] | 
+| Papomyia sp. BSNHM191-24 | novel_species |  | BGE | https://www.gbif.org/species/[GBIF ID] | 
 
-Species with inconsistencies in their GBIF ID's output to gbif_inconsistent.tsv for review. Parameter thresholds for 'inconsistent GBIF IDs):
-- Multiple synonymous GBIF ID's
-- < 95% confidence (for species-level), or < 90% (for genus-level)
-- Without 'ACCEPTED' status
-- MatchType != EXACT
-
-**taxonomy_request.tsv emailed to ENA to request species-level taxID creation**
-
-## TO DO ##
-
-GBIF ID inconsistency example:
-
+### Example {prefix}_gbif_inconsistent.tsv
 | usageKey |	scientificName |	canonicalName |	rank |	status |	confidence |	matchType |	kingdom |	phylum | order |	family |	genus |	species |	kingdomKey |	phylumKey |	classKey |	orderKey |	familyKey |	genusKey |	speciesKey |	synonym |	class |	index	| acceptedUsageKey |
 | --- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- | --- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	--- |	---	| --- |
 | 8753555	| Erotesis melanella McLachlan, 1884 | Erotesis melanella	| SPECIES	| SYNONYM	| 98	| EXACT	| Animalia	| Arthropoda |	Trichoptera |	Leptoceridae |	Adicella |	Adicella melanella |	1 |	54 |	216 | 1003	| 4395	| 1436670	| 1436745	| True |	Insecta	| 5	| 1436745 |
 
   - Erotesis melanella McLachlan, 1884 == [8753555](https://www.gbif.org/species/8753555)
   - Adicella melanella (McLachlan, 1884) == [1436745](https://www.gbif.org/species/1436745)
+
+## Authors
+- Dan Parsons @NHMUK
