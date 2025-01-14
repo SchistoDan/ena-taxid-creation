@@ -1,5 +1,5 @@
 """
-This script processes taxonomic data to create a properly formatted TSV file for submission
+This script processes taxonomic data to create properly formatted TSV files for submission
 to the European Nucleotide Archive (ENA) for taxonomy ID creation. It specifically handles
 cases where species-level taxonomy IDs are not available and need to be requested from ENA.
 
@@ -8,10 +8,17 @@ Process Overview:
     2. Filters data to identify entries requiring new taxonomy IDs (non-species level matches)
     3. Formats data according to ENA's taxonomy request specifications
     4. Validates species names against GBIF using the pygbif library
-    5. Creates output files:
+    5. Performs taxonomic rank validation against GBIF data
+    6. Creates output files:
         - A TSV file formatted for ENA taxonomy requests
-        - A CSV file containing species-level matches (not requiring new taxids)
-        - A TSV file listing any inconsistencies found during GBIF validation
+        - A CSV file containing taxonomic validation failures
+        - A TSV file listing GBIF inconsistencies (synonyms, fuzzy matches, etc.)
+
+The script implements a hierarchical fallback system for taxonomic names:
+    1. Uses species name if available
+    2. Falls back to "Genus sp. {ID}" if only genus is available
+    3. Falls back to "Family sp. {ID}" if only family is available
+    4. Uses "not collected" as a last resort
 """
 
 import sys
@@ -272,7 +279,7 @@ def resolve_names_and_update_file(input_filename, output_filename, input_csv, ou
         logger.error("Error: The input file must contain a 'name_type' column.")
         sys.exit(1)
 
-    # Initialize DataFrame for taxonomic validation failures
+    # Initialise DataFrame for taxonomic validation failures
     tax_validation_fails = []
 
     # Log initial DataFrame info
@@ -579,6 +586,6 @@ def resolve_names_and_update_file(input_filename, output_filename, input_csv, ou
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("Usage: python ena_taxonomy_request.py path/to/sample_metadata.csv path/to/samples.csv prefix")
+        print("Usage: python script.py path/to/sample_metadata.csv path/to/samples.csv prefix")
     else:
         tax_request(sys.argv[1], sys.argv[2], sys.argv[3])
