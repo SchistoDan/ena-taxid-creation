@@ -32,17 +32,18 @@ python ena_taxonomy_request.py path/to/sample_metadata.csv path/to/samples.csv o
 ```
 
 ## Input files
-**metadata.csv**: Contains taxonomic information with columns:
-Process ID
-phylum
-class
-order
-family
-genus
-species
-matched_rank
-taxid
-**samples.csv**: Contains Process IDs to be processed by script.
+**metadata.csv**: Contains columns:
+- Process ID
+- phylum
+- class
+- order
+- family
+- genus
+- species
+- matched_rank
+- taxid
+**samples.csv**: Contains columns:
+- ID (i.e. Process ID)
 
 ## Output Files
 The script generates several output files with the specified prefix:
