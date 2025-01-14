@@ -272,7 +272,7 @@ def resolve_names_and_update_file(input_filename, output_filename, input_csv, ou
         logger.error("Error: The input file must contain a 'name_type' column.")
         sys.exit(1)
 
-    # Initialise DataFrame for taxonomic validation failures
+    # Initialize DataFrame for taxonomic validation failures
     tax_validation_fails = []
 
     # Log initial DataFrame info
@@ -420,12 +420,29 @@ def resolve_names_and_update_file(input_filename, output_filename, input_csv, ou
             logger.info("Added missing column: %s", col)
 
     # Debug each condition for species-level matches
+#    species_conditions = {
+#        'valid_binomial': (result_df['proposed_name'].str.split().str.len() >= 2) & 
+#                         (~result_df['proposed_name'].str.contains('sp.', case=False, na=False)),
+#        'confidence_ok': result_df['confidence'].fillna(0) > 95,
+#        'status_accepted': result_df['status'].fillna('').str.strip() == 'ACCEPTED',
+#        'match_exact': result_df['matchType'].fillna('').str.strip() == 'EXACT'
+#    }
     species_conditions = {
-        'no_sp': ~result_df['proposed_name'].str.contains('sp.', na=False),
+        'valid_binomial': result_df.apply(lambda x: 
+                                        len(x['proposed_name'].split()) >= 2 and 
+                                        'sp.' not in x['proposed_name'].lower(), 
+                                        axis=1),
         'confidence_ok': result_df['confidence'].fillna(0) > 95,
         'status_accepted': result_df['status'].fillna('').str.strip() == 'ACCEPTED',
         'match_exact': result_df['matchType'].fillna('').str.strip() == 'EXACT'
     }
+
+    # Add debug logging for each part of valid_binomial
+    two_words = result_df['proposed_name'].str.split().str.len() >= 2
+    no_sp = ~result_df['proposed_name'].str.contains('sp.', case=False, na=False)
+    logger.info(f"\nDebugging valid_binomial components:")
+    logger.info(f"two_words condition: {two_words}")
+    logger.info(f"no_sp condition: {no_sp}")
 
     # Log conditions for specific samples
     debug_samples = ['BSNHM012-24', 'BSNHM017-24', 'BSNHM039-24', 'BSNHM065-24']
@@ -449,7 +466,7 @@ def resolve_names_and_update_file(input_filename, output_filename, input_csv, ou
         ((result_df['status'] == 'NOT_COLLECTED') & (result_df['matchType'] == 'NONE')) |
         
         # Case 2: Species-level matches
-        (species_conditions['no_sp'] &
+        (species_conditions['valid_binomial'] &
          species_conditions['confidence_ok'] &
          species_conditions['status_accepted'] &
          species_conditions['match_exact']) |
@@ -559,8 +576,9 @@ def resolve_names_and_update_file(input_filename, output_filename, input_csv, ou
     inconsistent_df.to_csv(inconsistent_filename, sep='\t', index=False, float_format='%d')
     logger.info("Inconsistent rows written to %s", inconsistent_filename)
 
+
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("Usage: python script.py path/to/sample_metadata.csv path/to/samples.csv prefix")
+        print("Usage: python ena_taxonomy_request.py path/to/sample_metadata.csv path/to/samples.csv prefix")
     else:
         tax_request(sys.argv[1], sys.argv[2], sys.argv[3])
