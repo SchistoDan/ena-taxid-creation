@@ -21,7 +21,7 @@ A Python script for processing taxonomic data and generating properly formatted 
 ```bash
 git clone [repository-url]
 ```
-2. Install required packages, e.g. [pygbif](https://github.com/gbif/pygbif)
+2. Install required packages, e.g. pandas and [pygbif](https://github.com/gbif/pygbif)
 ```bash
 pip install pandas pygbif
 ```
