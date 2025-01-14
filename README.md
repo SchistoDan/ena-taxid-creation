@@ -17,16 +17,13 @@ Requires [pygbif](https://github.com/gbif/pygbif) be installed in conda env to g
 
 Species with inconsistencies in their GBIF ID's output to gbif_inconsistent.tsv for review. Parameter thresholds for 'inconsistent GBIF IDs):
 - Multiple synonymous GBIF ID's
-- < 95% confidence
+- < 95% confidence (for species-level), or < 90% (for genus-level)
 - Without 'ACCEPTED' status
-- Class != Insecta
 - MatchType != EXACT
 
 **taxonomy_request.tsv emailed to ENA to request species-level taxID creation**
 
 ## TO DO ##
-- Figure out what to do when GBIF IDs are inconsistent.
-- Parse new taxIDs created by ENA to file. Currently unsure how new taxIDs will be returned by ENA after creation, and how to get them into ENA sample registration form for sample accession number creation.
 
 GBIF ID inconsistency example:
 
